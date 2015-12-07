@@ -20,17 +20,18 @@ var express    = require('express'),
   app          = express(),
   bluemix      = require('./config/bluemix'),
   extend       = require('util')._extend,
-  watson       = require('watson-developer-cloud');
+  watson       = require('watson-developer-cloud'),
+  fs           = require('fs');
 
 // Bootstrap application settings
 require('./config/express')(app);
 
 // if bluemix credentials exists, then override local
 var credentials = extend({
-  version: 'v1',
-  url : '<url>',
-  username : '<username>',
-  password : '<password>',
+    "version": 'v1',
+    "url": "https://gateway.watsonplatform.net/natural-language-classifier/api",
+    "username": "637d6b17-1f10-4764-a049-389e7610f06a",
+    "password": "6B5msS1eags5",
 }, bluemix.getServiceCreds('natural_language_classifier')); // VCAP_SERVICES
 
 // Create the service wrapper
@@ -43,9 +44,9 @@ app.get('/', function(req, res) {
 
 // Call the pre-trained classifier with body.text
 // Responses are json
-app.post('/', function(req, res, next) {
+app.post('/ask', function(req, res, next) {
   var params = {
-    classifier: process.env.CLASSIFIER_ID || '<classifier-id>', // pre-trained classifier
+    classifier: process.env.CLASSIFIER_ID || '3AE103x13-nlc-1059', // pre-trained classifier
     text: req.body.text
   };
 
@@ -56,6 +57,49 @@ app.post('/', function(req, res, next) {
       res.json(results);
   });
 });
+
+// Call to train classifier with csv
+// Responses are json
+app.post('/train', function(req, res, next) {
+  
+  var fs_filepath = fs.createReadStream('./training/train_data.csv');
+
+  var params = {
+    "language"          : 'en',
+    "name"              : 'Test classifier',
+    "training_data"     : fs_filepath
+  };
+
+  nlClassifier.create(params, function(err, results) {
+    if (err){
+      return next(err);
+    }
+    else{
+      console.log('SUCCESS:', results);
+      res.json(results);
+    }
+  });
+});
+
+// Call the pre-trained classifier to check status
+// Responses are json
+app.post('/check', function(req, res, next) {
+  
+  var params = {
+    "classifier_id"          : req.classifier_id
+  };
+
+  nlClassifier.status(params, function(err, results) {
+    if (err){
+      return next(err);
+    }
+    else{
+      console.log('SUCCESS:', results);
+      res.json(results);
+    }
+  });
+});
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

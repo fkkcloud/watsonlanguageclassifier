@@ -25,9 +25,20 @@ $(document).ready(function() {
     $results = $('.results'),
     $classification = $('.classification'),
     $confidence = $('.confidence'),
-    $question = $('.questionText');
+    $question = $('.questionText'),
+    $traindata = $('.trainData');
 
+/* -- CHECK CLASSIFIER -- */
+  $('.check-btn').click(function() {
+    checkClassifier();
+  });
 
+/* -- TRAIN DATA -- */
+  $('.train-btn').click(function() {
+    trainData();
+  });
+
+/* -- ASK QUESTION -- */
   $('.ask-btn').click(function() {
     askQuestion($question.val());
     $question.focus();
@@ -38,6 +49,48 @@ $(document).ready(function() {
       askQuestion($question.val());
     }
   });
+
+/* -- Functions -- */
+
+  var current_classifier_id;
+
+  // Check the status of the classifier
+  var checkClassifier = function() {
+    $loading.show();
+
+    var req = { 'classifier_id' : current_classifier_id };
+
+    $.post('/check', req)
+    .done(function onSucess(data) {
+      console.log('checl:',data);
+    })
+    .fail(function onError(error){
+      console.log('failed:', error);
+    })
+    .always(function always() {
+      $loading.hide();
+    })
+  }
+
+  // Send data to the classifier and train the data
+  var trainData = function() {
+
+    $loading.show();
+
+    $.post('/train')
+    .done(function onSucess(data) {
+      //console.log('succss:', data);
+      console.log('classifier id:', data.classifier_id);
+      current_classifier_id = data.classifier_id;
+    })
+    .fail(function onError(error) {
+      console.log('failed:', error);
+    })
+    .always(function always() {
+      $loading.hide();
+    })
+
+  }
 
   // Ask a question via POST to /
   var askQuestion = function(question) {
@@ -50,7 +103,7 @@ $(document).ready(function() {
     $error.hide();
     $results.hide();
 
-    $.post('/', {text: question})
+    $.post('/ask', {text: question})
       .done(function onSucess(answers){
         $results.show();
         $classification.text(answers.top_class);

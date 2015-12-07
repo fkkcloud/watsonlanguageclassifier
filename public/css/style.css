@@ -14,7 +14,7 @@
 	text-decoration: none;
 }
 .confidence {
-	color: #d74108;
+	color: #22d65b;
 }
 
 .classification {
@@ -23,4 +23,21 @@
 .ask-btn {
 	height: 2.5em;
 	padding: 0em;
+}
+
+.smallhead {
+	font-size: 14px;
+	color: #e8eef2;
+}
+
+.greenclr {
+	color: #d2dee6 !important;
+}
+
+.headclr {
+	color: #ff7373 !important;
+}
+
+.answerclr {
+	color: #39b9a1 !important;
 }
